@@ -65,6 +65,13 @@ export default function NewRecipePage() {
 
   return (
     <div className="flex flex-col min-h-svh p-4 gap-6">
+      <datalist id="units">
+        <option value="tsp" /><option value="tbsp" /><option value="cup" />
+        <option value="oz" /><option value="lb" /><option value="g" />
+        <option value="kg" /><option value="ml" /><option value="l" />
+        <option value="pinch" /><option value="clove" /><option value="slice" />
+        <option value="can" /><option value="bunch" /><option value="piece" />
+      </datalist>
       <header className="flex items-center gap-3 pt-2">
         <Link href="/recipes" aria-label="Back to recipes" className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />
@@ -100,24 +107,29 @@ export default function NewRecipePage() {
           </button>
         </div>
         {ingredients.map((ing, i) => (
-          <div key={i} className="flex gap-2 items-center">
-            <input type="number" value={ing.amount} onChange={(e) => updateIngredient(i, "amount", parseFloat(e.target.value) || 0)}
-              aria-label={`Amount for ingredient ${i + 1}`}
-              className="w-20 bg-secondary rounded-xl px-3 py-3 text-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-ring" />
-            <input value={ing.unit} onChange={(e) => updateIngredient(i, "unit", e.target.value)}
-              placeholder="unit"
-              aria-label={`Unit for ingredient ${i + 1}`}
-              className="w-20 bg-secondary rounded-xl px-3 py-3 text-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-ring" />
-            <input value={ing.name} onChange={(e) => updateIngredient(i, "name", e.target.value)}
-              placeholder="Ingredient name"
-              aria-label={`Name of ingredient ${i + 1}`}
-              className="flex-1 bg-secondary rounded-xl px-3 py-3 text-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-ring" />
-            {ingredients.length > 1 && (
-              <button onClick={() => removeIngredient(i)} aria-label={`Remove ingredient ${i + 1}`}
-                className="p-3 rounded-xl bg-destructive/15 text-destructive min-h-[3rem] min-w-[3rem] flex items-center justify-center">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            )}
+          <div key={i} className="flex flex-col gap-2 bg-secondary/50 rounded-2xl p-3">
+            <div className="flex gap-2">
+              <input type="number" value={ing.amount} onChange={(e) => updateIngredient(i, "amount", parseFloat(e.target.value) || 0)}
+                aria-label={`Amount for ingredient ${i + 1}`}
+                className="w-24 bg-secondary rounded-xl px-3 py-3 text-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-ring" />
+              <input value={ing.unit} onChange={(e) => updateIngredient(i, "unit", e.target.value)}
+                placeholder="unit"
+                list="units"
+                aria-label={`Unit for ingredient ${i + 1}`}
+                className="flex-1 bg-secondary rounded-xl px-3 py-3 text-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-ring" />
+            </div>
+            <div className="flex gap-2">
+              <input value={ing.name} onChange={(e) => updateIngredient(i, "name", e.target.value)}
+                placeholder="Ingredient name"
+                aria-label={`Name of ingredient ${i + 1}`}
+                className="flex-1 bg-secondary rounded-xl px-3 py-3 text-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-ring" />
+              {ingredients.length > 1 && (
+                <button onClick={() => removeIngredient(i)} aria-label={`Remove ingredient ${i + 1}`}
+                  className="p-3 rounded-xl bg-destructive/15 text-destructive min-h-[3rem] min-w-[3rem] flex items-center justify-center shrink-0">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
