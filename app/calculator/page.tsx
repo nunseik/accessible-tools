@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { TTSButton } from "@/components/accessibility/TTSButton";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useSettings } from "@/hooks/useSettings";
 
@@ -138,31 +137,29 @@ export default function CalculatorPage() {
   };
 
   const shownDisplay = display === "Error" ? c("error") : display;
-  const displayLabel = `${prev ? prev + " " + op + " " : ""}${shownDisplay}`;
 
   return (
     <div className="flex flex-col min-h-svh p-4 gap-4">
-      <header className="flex items-center gap-3 pt-2">
-        <Link href="/" aria-label={a11y("backToHome")} className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <h1 className="text-2xl font-bold flex-1">{t("title")}</h1>
-      </header>
+      <h1 className="sr-only">{t("title")}</h1>
 
-      {/* Display */}
-      <div className="bg-secondary rounded-2xl p-4 text-right">
-        {prev && op && (
-          <div className="text-muted-foreground text-lg mb-1">{prev} {op}</div>
-        )}
-        <div
-          className="text-5xl font-bold tracking-tight break-all leading-tight"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {shownDisplay}
-        </div>
-        <div className="mt-2 flex justify-end">
-          <TTSButton text={displayLabel} label={t("readResult")} />
+      {/* Display — back button lives in top-left corner */}
+      <div className="bg-secondary rounded-2xl p-4">
+        <div className="flex items-start gap-2">
+          <Link href="/" aria-label={a11y("backToHome")} className="p-2 rounded-xl hover:bg-background/40 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center shrink-0 mt-1">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div className="flex-1 text-right">
+            {prev && op && (
+              <div className="text-muted-foreground text-lg mb-1">{prev} {op}</div>
+            )}
+            <div
+              className="text-5xl font-bold tracking-tight break-all leading-tight"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {shownDisplay}
+            </div>
+          </div>
         </div>
       </div>
 

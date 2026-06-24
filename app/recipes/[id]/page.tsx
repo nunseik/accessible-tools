@@ -86,7 +86,7 @@ export default function RecipeDetailPage({ params }: { params: Promise<{ id: str
         <Link href="/recipes" aria-label={t("backToRecipes")} className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold flex-1 truncate">{recipe.title}</h1>
+        <h1 className="sr-only">{recipe.title}</h1><span className="flex-1" aria-hidden="true" />
         <button
           onClick={toggleCookMode}
           aria-label={tab === "cook" ? t("exitCook") : t("enterCook")}

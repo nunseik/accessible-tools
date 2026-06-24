@@ -41,23 +41,21 @@ export default function ConverterPage() {
 
   return (
     <div className="flex flex-col min-h-svh p-4 gap-4">
-      <header className="flex items-center gap-3 pt-2">
-        <Link
-          href="/"
-          aria-label={a11y("backToHome")}
-          className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <h1 className="text-2xl font-bold flex-1">{t("title")}</h1>
-      </header>
+      <h1 className="sr-only">{t("title")}</h1>
 
-      {/* Category tabs */}
+      {/* Category tabs — back button is the first item */}
       <div
         className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none"
         role="group"
         aria-label={t("categoryGroup")}
       >
+        <Link
+          href="/"
+          aria-label={a11y("backToHome")}
+          className="shrink-0 p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Link>
         {CATEGORY_KEYS.map((cat) => (
           <button
             key={cat}

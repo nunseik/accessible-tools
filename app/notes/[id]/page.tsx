@@ -131,29 +131,25 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="flex flex-col min-h-svh p-4 gap-4">
-      <header className="flex items-center gap-3 pt-2">
-        <button onClick={handleBack} aria-label={t("backToNotes")} className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
+      <h1 className="sr-only">{t("editTitle")}</h1>
+
+      <div className="flex items-center gap-2">
+        <button onClick={handleBack} aria-label={t("backToNotes")} className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center shrink-0">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-2xl font-bold flex-1">{t("editTitle")}</h1>
+        <input
+          type="text"
+          placeholder={t("titlePlaceholderEdit")}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          aria-label={t("titleAria")}
+          className="flex-1 min-w-0 bg-secondary rounded-xl px-4 py-3 text-xl font-semibold placeholder:text-muted-foreground focus:outline-none focus-visible:ring-4 focus-visible:ring-ring"
+        />
         <button onClick={handleDelete} aria-label={t("deleteAria")}
-          className="p-3 rounded-xl bg-destructive/15 text-destructive hover:bg-destructive/25 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
+          className="p-3 rounded-xl bg-destructive/15 text-destructive hover:bg-destructive/25 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center shrink-0">
           <Trash2 className="w-5 h-5" />
         </button>
-        <button onClick={handleSave} aria-label={t("saveAria")}
-          className="p-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
-          <Save className="w-5 h-5" />
-        </button>
-      </header>
-
-      <input
-        type="text"
-        placeholder={t("titlePlaceholderEdit")}
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        aria-label={t("titleAria")}
-        className="w-full bg-secondary rounded-xl px-4 py-3 text-xl font-semibold placeholder:text-muted-foreground focus:outline-none focus-visible:ring-4 focus-visible:ring-ring"
-      />
+      </div>
 
       <div className="flex-1 bg-secondary rounded-xl px-4 py-3 min-h-[12rem]">
         <BlockEditor

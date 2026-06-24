@@ -33,7 +33,7 @@ export default function RecipesPage() {
         <Link href="/" aria-label={a11y("backToHome")} className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold flex-1">{t("title")}</h1>
+        <h1 className="sr-only">{t("title")}</h1><span className="flex-1" aria-hidden="true" />
         <Link href="/recipes/new" aria-label={t("newAria")}
           className="p-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
           <Plus className="w-5 h-5" />
