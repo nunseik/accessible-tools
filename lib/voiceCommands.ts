@@ -7,23 +7,17 @@ import type { Locale } from "@/lib/db";
 // language.
 const COMMAND_MAPS: Record<Locale, [RegExp, string][]> = {
   en: [
-    [/\bnew paragraph\b/gi, "\n\n"],
-    [/\bnew line\b/gi, "\n"],
-    [/\bnext line\b/gi, "\n"],
+    [/\b(?:new line|next line)\b/gi, "\n"],
     [/\b(?:checkbox|check box|checklist item|check item|to do item|todo item)\b/gi, "\n- [ ] "],
     [/\b(?:bullet point|new bullet)\b/gi, "\n- "],
   ],
   "pt-BR": [
-    [/\bnovo parágrafo\b/gi, "\n\n"],
-    [/\bnova linha\b/gi, "\n"],
-    [/\bpróxima linha\b/gi, "\n"],
+    [/\b(?:nova linha|próxima linha)\b/gi, "\n"],
     [/\b(?:caixa de seleção|item de lista|item de tarefa|tarefa)\b/gi, "\n- [ ] "],
     [/\b(?:marcador|novo marcador|item de marcador)\b/gi, "\n- "],
   ],
   es: [
-    [/\bnuevo párrafo\b/gi, "\n\n"],
-    [/\bnueva línea\b/gi, "\n"],
-    [/\bsalto de línea\b/gi, "\n"],
+    [/\b(?:nueva línea|salto de línea)\b/gi, "\n"],
     [/\b(?:casilla|casilla de verificación|tarea|elemento de tarea)\b/gi, "\n- [ ] "],
     [/\b(?:viñeta|nueva viñeta|punto)\b/gi, "\n- "],
   ],
@@ -37,7 +31,7 @@ export function processVoiceText(text: string, locale: Locale = "en"): string {
   return result
     .replace(/ *\n */g, "\n")
     .replace(/\n{3,}/g, "\n\n")
-    .trimEnd();
+    .replace(/[ \t]+$/, "");
 }
 
 // Display hints shown in the "Voice commands" panel — the example phrase the
@@ -45,19 +39,16 @@ export function processVoiceText(text: string, locale: Locale = "en"): string {
 const HINTS: Record<Locale, { command: string; result: string }[]> = {
   en: [
     { command: '"new line"', result: "line break" },
-    { command: '"new paragraph"', result: "paragraph break" },
     { command: '"bullet point"', result: "• bullet item" },
     { command: '"checkbox"', result: "☐ to-do item" },
   ],
   "pt-BR": [
     { command: '"nova linha"', result: "quebra de linha" },
-    { command: '"novo parágrafo"', result: "quebra de parágrafo" },
     { command: '"marcador"', result: "• item com marcador" },
     { command: '"tarefa"', result: "☐ item de tarefa" },
   ],
   es: [
     { command: '"nueva línea"', result: "salto de línea" },
-    { command: '"nuevo párrafo"', result: "salto de párrafo" },
     { command: '"viñeta"', result: "• elemento con viñeta" },
     { command: '"tarea"', result: "☐ elemento de tarea" },
   ],

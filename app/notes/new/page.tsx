@@ -42,29 +42,49 @@ export default function NewNotePage() {
 
   function handleVoiceResult(rawText: string) {
     const processed = processVoiceText(rawText, locale);
-    const incoming = markdownToBlocks(processed.replace(/^\n+/, ""));
+    const startsWithBreak = /^\n/.test(processed);
+    const endsWithBreak = /\n$/.test(processed);
+    const text = processed.replace(/^\n+/, "").replace(/\n+$/, "");
+    const incoming = text ? markdownToBlocks(text) : [];
 
     setBlocks((current) => {
-      if (incoming.length === 0) return current;
-
       const result = [...current];
       const last = result[result.length - 1];
-      const first = incoming[0];
+
+      // "new line" with no other content
+      if (incoming.length === 0) {
+        if (startsWithBreak || endsWithBreak) {
+          return [...result, { id: genId(), type: "text" as const, content: "" }];
+        }
+        return result;
+      }
 
       // Replace the initial empty block
       if (result.length === 1 && last.type === "text" && last.content === "") {
-        return incoming.map((b) => ({ ...b, id: genId() }));
+        const newBlocks = incoming.map((b) => ({ ...b, id: genId() }));
+        if (endsWithBreak) newBlocks.push({ id: genId(), type: "text" as const, content: "" });
+        return newBlocks;
       }
 
-      // Merge leading text into last text block
-      if (first.type === "text" && last.type === "text") {
-        result[result.length - 1] = {
-          ...last,
-          content: last.content ? `${last.content} ${first.content}` : first.content,
-        };
-        result.push(...incoming.slice(1).map((b) => ({ ...b, id: genId() })));
-      } else {
+      if (startsWithBreak) {
+        // "new line …text" — don't merge with previous block
         result.push(...incoming.map((b) => ({ ...b, id: genId() })));
+      } else {
+        // Merge leading text into last text block
+        const first = incoming[0];
+        if (first.type === "text" && last.type === "text") {
+          result[result.length - 1] = {
+            ...last,
+            content: last.content ? `${last.content} ${first.content}` : first.content,
+          };
+          result.push(...incoming.slice(1).map((b) => ({ ...b, id: genId() })));
+        } else {
+          result.push(...incoming.map((b) => ({ ...b, id: genId() })));
+        }
+      }
+
+      if (endsWithBreak) {
+        result.push({ id: genId(), type: "text" as const, content: "" });
       }
 
       return result;

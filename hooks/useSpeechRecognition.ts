@@ -20,6 +20,9 @@ export function useSpeechRecognition(
   const [isSupported, setIsSupported] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const onResultRef = useRef(onResult);
+  // Tracks the highest result index already delivered to onResult, guarding
+  // against Android Chrome reporting resultIndex=0 after a final result fires.
+  const lastFinalIndexRef = useRef(-1);
   const { settings } = useSettings();
   const lang = SPEECH_LANG[settings.locale] ?? "en-US";
 
@@ -47,7 +50,10 @@ export function useSpeechRecognition(
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
-          finalText += result[0].transcript;
+          if (i > lastFinalIndexRef.current) {
+            finalText += result[0].transcript;
+            lastFinalIndexRef.current = i;
+          }
         } else {
           interimText += result[0].transcript;
         }
@@ -67,6 +73,7 @@ export function useSpeechRecognition(
   const start = useCallback(() => {
     if (!recognitionRef.current) return;
     setTranscript("");
+    lastFinalIndexRef.current = -1;
     setIsListening(true);
     recognitionRef.current.start();
   }, []);
