@@ -65,6 +65,26 @@ await db.notes.delete(id);
 2. Add an entry to the `TOOLS` array in `app/page.tsx`
 3. Add the route to `STATIC_ASSETS` in `public/sw.js` for offline support
 4. If the tool stores data, add a table to `lib/db.ts` and bump the version
+5. Add a translation namespace for the tool's strings in **all** of `locales/en.json`, `locales/pt-BR.json`, `locales/es.json` (see i18n section) — never hardcode user-facing text
+
+## Internationalization (i18n)
+
+The app supports `en`, `pt-BR`, and `es`. There is **no locale routing** — the chosen locale is stored in Dexie settings (`Settings.locale`) and applied client-side, so URLs never change (keeps offline SW caching simple).
+
+- **Messages** live in `locales/<locale>.json`, namespaced by area (`home`, `calculator`, `converter`, `notes`, `recipes`, `settings`, `a11y`, `common`). All three files must have **identical key sets** — run a key-parity check before committing; a missing key falls back to the English string at runtime but is a bug.
+- **Reading strings**: `const t = useTranslations("namespace")` from `next-intl`, then `t("key")`. Works only in client components (the provider, `components/I18nProvider.tsx`, is client-side via `NextIntlClientProvider`). A page that needs translations must be `"use client"`.
+- **Plurals / interpolation**: use ICU syntax in the JSON (e.g. `"{count, plural, one {# item} other {# items}}"`) and pass values: `t("key", { count })`. Don't hand-roll `n !== 1 ? "s" : ""`.
+- **Switching language**: `LanguageControl` writes `updateSettings({ locale })`; `useLiveQuery` makes `I18nProvider` re-render with the new messages reactively.
+- **Adding a locale**: add the JSON file, then register it in `lib/i18n.ts` (`LOCALES`, `MESSAGES`, `SPEECH_LANG`) and the `Locale` union in `lib/db.ts`.
+
+### Voice/audio is locale-coupled
+
+Audio I/O language is driven by the **same** `Settings.locale`, mapped to a BCP-47 tag via `SPEECH_LANG` in `lib/i18n.ts`:
+
+- `useSpeechRecognition` sets `recognition.lang` and **re-creates** the recognizer when the locale changes (locale is in the effect deps).
+- `useTextToSpeech` sets `utterance.lang` **and explicitly selects a matching voice** via `pickVoice()` — setting `lang` alone is not enough; most browsers otherwise keep the default (English) voice. Voices load async, so the hook listens for `voiceschanged`. Falls back to the browser default when no matching voice exists (device-dependent).
+- Spoken calculator key labels live under `calculator.tts.*` in the message files.
+- Voice **commands** (dictation triggers like "new line", and recipe cook-mode "next/back/repeat") are language-specific and live in `lib/voiceCommands.ts`, keyed by locale — `processVoiceText(text, locale)`, `getVoiceCommandHints(locale)`, `getCookCommands(locale)`.
 
 ## PWA / offline
 

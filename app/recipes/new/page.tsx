@@ -153,7 +153,7 @@ export default function NewRecipePage() {
               rows={2}
               className="flex-1 bg-secondary rounded-xl px-3 py-3 text-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-ring resize-none" />
             {steps.length > 1 && (
-              <button onClick={() => removeStep(i)} aria-label={`Remove step ${i + 1}`}
+              <button onClick={() => removeStep(i)} aria-label={t("removeStepAria", { n: i + 1 })}
                 className="p-3 rounded-xl bg-destructive/15 text-destructive min-h-[3rem] min-w-[3rem] flex items-center justify-center mt-1">
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -164,7 +164,7 @@ export default function NewRecipePage() {
 
       <button onClick={handleSave}
         className="w-full bg-primary text-primary-foreground rounded-2xl py-4 font-bold text-xl active:scale-95 transition-transform focus-visible:ring-4 focus-visible:ring-ring min-h-[4rem] mb-4">
-        Save Recipe
+        {t("saveButton")}
       </button>
     </div>
   );
