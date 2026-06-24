@@ -8,13 +8,18 @@ import { VoiceInput } from "@/components/accessibility/VoiceInput";
 import { TTSButton } from "@/components/accessibility/TTSButton";
 import { BlockEditor } from "@/components/notes/BlockEditor";
 import { Block, blocksToMarkdown, blocksToPlainText, genId, markdownToBlocks } from "@/lib/noteBlocks";
-import { processVoiceText, VOICE_COMMAND_HINTS } from "@/lib/voiceCommands";
+import { processVoiceText, getVoiceCommandHints } from "@/lib/voiceCommands";
+import { useSettings } from "@/hooks/useSettings";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 const INITIAL_BLOCKS: Block[] = [{ id: "b0", type: "text", content: "" }];
 
 export default function NewNotePage() {
+  const t = useTranslations("notes");
   const router = useRouter();
+  const { settings } = useSettings();
+  const locale = settings.locale;
   const [title, setTitle] = useState("");
   const [blocks, setBlocks] = useState<Block[]>(INITIAL_BLOCKS);
   const [hintsOpen, setHintsOpen] = useState(false);
@@ -22,21 +27,21 @@ export default function NewNotePage() {
   async function handleSave() {
     const content = blocksToMarkdown(blocks).trim();
     if (!content && !title.trim()) {
-      toast.error("Please add some content before saving");
+      toast.error(t("toastNeedContent"));
       return;
     }
     await db.notes.add({
-      title: title.trim() || "Untitled",
+      title: title.trim() || t("untitled"),
       content,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    toast.success("Note saved");
+    toast.success(t("toastSaved"));
     router.push("/notes");
   }
 
   function handleVoiceResult(rawText: string) {
-    const processed = processVoiceText(rawText);
+    const processed = processVoiceText(rawText, locale);
     const incoming = markdownToBlocks(processed.replace(/^\n+/, ""));
 
     setBlocks((current) => {
@@ -117,7 +122,7 @@ export default function NewNotePage() {
         </button>
         {hintsOpen && (
           <div id="voice-hints" className="px-4 pb-4 grid grid-cols-1 gap-2">
-            {VOICE_COMMAND_HINTS.map(({ command, result }) => (
+            {getVoiceCommandHints(locale).map(({ command, result }) => (
               <div key={command} className="flex items-center justify-between gap-4 text-sm">
                 <code className="bg-background rounded-md px-2 py-1 font-mono text-foreground">{command}</code>
                 <span className="text-muted-foreground">{result}</span>

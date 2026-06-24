@@ -8,12 +8,15 @@ import { VoiceInput } from "@/components/accessibility/VoiceInput";
 import { TTSButton } from "@/components/accessibility/TTSButton";
 import { BlockEditor } from "@/components/notes/BlockEditor";
 import { Block, blocksToMarkdown, blocksToPlainText, genId, markdownToBlocks } from "@/lib/noteBlocks";
-import { processVoiceText, VOICE_COMMAND_HINTS } from "@/lib/voiceCommands";
+import { processVoiceText, getVoiceCommandHints } from "@/lib/voiceCommands";
+import { useSettings } from "@/hooks/useSettings";
 import { toast } from "sonner";
 
 export default function EditNotePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { settings } = useSettings();
+  const locale = settings.locale;
   const [title, setTitle] = useState("");
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -46,7 +49,7 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
   }
 
   function handleVoiceResult(rawText: string) {
-    const processed = processVoiceText(rawText);
+    const processed = processVoiceText(rawText, locale);
     const incoming = markdownToBlocks(processed.replace(/^\n+/, ""));
 
     setBlocks((current) => {
@@ -135,7 +138,7 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
         </button>
         {hintsOpen && (
           <div id="voice-hints" className="px-4 pb-4 grid grid-cols-1 gap-2">
-            {VOICE_COMMAND_HINTS.map(({ command, result }) => (
+            {getVoiceCommandHints(locale).map(({ command, result }) => (
               <div key={command} className="flex items-center justify-between gap-4 text-sm">
                 <code className="bg-background rounded-md px-2 py-1 font-mono text-foreground">{command}</code>
                 <span className="text-muted-foreground">{result}</span>
