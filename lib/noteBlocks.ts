@@ -17,7 +17,7 @@ export function markdownToBlocks(markdown: string): Block[] {
     return [{ id: genId(), type: "text", content: "" }];
   }
   return markdown.split("\n").map((line) => {
-    const cbMatch = line.match(/^- \[([ x])\] (.*)$/);
+    const cbMatch = line.match(/^- \[([ x])\] ?(.*)$/);
     if (cbMatch) {
       return { id: genId(), type: "checkbox" as const, content: cbMatch[2], checked: cbMatch[1] === "x" };
     }

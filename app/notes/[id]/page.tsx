@@ -100,9 +100,12 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
         // "new line …text" — don't merge with previous block
         result.push(...incoming.map((b) => ({ ...b, id: genId() })));
       } else {
-        // Merge leading text into last text block
         const first = incoming[0];
-        if (first.type === "text" && last.type === "text") {
+        // Fill an empty trailing checkbox/bullet before pushing new text below it
+        if (first.type === "text" && first.content && (last.type === "checkbox" || last.type === "bullet") && last.content === "") {
+          result[result.length - 1] = { ...last, content: first.content };
+          result.push(...incoming.slice(1).map((b) => ({ ...b, id: genId() })));
+        } else if (first.type === "text" && last.type === "text") {
           result[result.length - 1] = {
             ...last,
             content: last.content ? `${last.content} ${first.content}` : first.content,
