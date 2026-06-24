@@ -10,10 +10,13 @@ import { BlockEditor } from "@/components/notes/BlockEditor";
 import { Block, blocksToMarkdown, blocksToPlainText, genId, markdownToBlocks } from "@/lib/noteBlocks";
 import { processVoiceText, getVoiceCommandHints } from "@/lib/voiceCommands";
 import { useSettings } from "@/hooks/useSettings";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 export default function EditNotePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const t = useTranslations("notes");
+  const common = useTranslations("common");
   const router = useRouter();
   const { settings } = useSettings();
   const locale = settings.locale;
@@ -33,18 +36,18 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
 
   async function handleSave() {
     await db.notes.update(parseInt(id), {
-      title: title.trim() || "Untitled",
+      title: title.trim() || t("untitled"),
       content: blocksToMarkdown(blocks).trim(),
       updatedAt: new Date(),
     });
-    toast.success("Note saved");
+    toast.success(t("toastSaved"));
     router.push("/notes");
   }
 
   async function handleDelete() {
     await db.notes.delete(parseInt(id));
     if (navigator.vibrate) navigator.vibrate(100);
-    toast.success("Note deleted");
+    toast.success(t("toastDeleted"));
     router.push("/notes");
   }
 
@@ -79,7 +82,7 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
 
   if (!loaded) {
     return <div className="flex items-center justify-center min-h-svh">
-      <p className="text-muted-foreground">Loading…</p>
+      <p className="text-muted-foreground">{common("loading")}</p>
     </div>;
   }
 
@@ -88,15 +91,15 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
   return (
     <div className="flex flex-col min-h-svh p-4 gap-4">
       <header className="flex items-center gap-3 pt-2">
-        <Link href="/notes" aria-label="Back to notes" className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
+        <Link href="/notes" aria-label={t("backToNotes")} className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold flex-1">Edit Note</h1>
-        <button onClick={handleDelete} aria-label="Delete note"
+        <h1 className="text-2xl font-bold flex-1">{t("editTitle")}</h1>
+        <button onClick={handleDelete} aria-label={t("deleteAria")}
           className="p-3 rounded-xl bg-destructive/15 text-destructive hover:bg-destructive/25 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
           <Trash2 className="w-5 h-5" />
         </button>
-        <button onClick={handleSave} aria-label="Save note"
+        <button onClick={handleSave} aria-label={t("saveAria")}
           className="p-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
           <Save className="w-5 h-5" />
         </button>
@@ -104,10 +107,10 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
 
       <input
         type="text"
-        placeholder="Title"
+        placeholder={t("titlePlaceholderEdit")}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        aria-label="Note title"
+        aria-label={t("titleAria")}
         className="w-full bg-secondary rounded-xl px-4 py-3 text-xl font-semibold placeholder:text-muted-foreground focus:outline-none focus-visible:ring-4 focus-visible:ring-ring"
       />
 
@@ -115,14 +118,14 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
         <BlockEditor
           blocks={blocks}
           onChange={setBlocks}
-          placeholder="Note content…"
+          placeholder={t("contentPlaceholderEdit")}
         />
       </div>
 
-      {plainText && <TTSButton text={plainText} label="Read note aloud" />}
+      {plainText && <TTSButton text={plainText} label={t("readAloud")} />}
 
       <div className="flex flex-col items-center gap-3 py-4">
-        <p className="text-muted-foreground text-sm">Tap to dictate</p>
+        <p className="text-muted-foreground text-sm">{t("tapToDictate")}</p>
         <VoiceInput onResult={handleVoiceResult} size="large" />
       </div>
 
@@ -133,7 +136,7 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
           aria-controls="voice-hints"
           className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-inset min-h-[3rem]"
         >
-          <span>Voice commands</span>
+          <span>{t("voiceCommands")}</span>
           {hintsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
         {hintsOpen && (
@@ -150,7 +153,7 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
 
       <button onClick={handleSave}
         className="w-full bg-primary text-primary-foreground rounded-2xl py-4 font-bold text-xl active:scale-95 transition-transform focus-visible:ring-4 focus-visible:ring-ring min-h-[4rem]">
-        Save Note
+        {t("saveButton")}
       </button>
     </div>
   );

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { CATEGORIES, convertAll, formatNumber, type UnitCategory } from "@/lib/conversions";
 import { TTSButton } from "@/components/accessibility/TTSButton";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,8 @@ export default function ConverterPage() {
   const [category, setCategory] = useState<UnitCategory>("cooking");
   const [fromUnit, setFromUnit] = useState("cup");
   const [value, setValue] = useState("1");
+  const t = useTranslations("converter");
+  const a11y = useTranslations("a11y");
 
   const cats = CATEGORIES[category];
   const unitKeys = Object.keys(cats.units);
@@ -31,29 +34,29 @@ export default function ConverterPage() {
 
   const ttsText = Object.entries(results)
     .filter(([, v]) => isFinite(v))
-    .map(([key, v]) => `${formatNumber(v)} ${cats.units[key].label}`)
+    .map(([key, v]) => `${formatNumber(v)} ${t(`units.${key}`)}`)
     .join(", ");
 
-  const fullTtsText = `${value} ${cats.units[fromUnit]?.label ?? fromUnit} equals: ${ttsText}`;
+  const fullTtsText = `${value} ${t(`units.${fromUnit}`)} ${t("equals")}: ${ttsText}`;
 
   return (
     <div className="flex flex-col min-h-svh p-4 gap-4">
       <header className="flex items-center gap-3 pt-2">
         <Link
           href="/"
-          aria-label="Back to home"
+          aria-label={a11y("backToHome")}
           className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold flex-1">Converter</h1>
+        <h1 className="text-2xl font-bold flex-1">{t("title")}</h1>
       </header>
 
       {/* Category tabs */}
       <div
         className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none"
         role="group"
-        aria-label="Conversion category"
+        aria-label={t("categoryGroup")}
       >
         {CATEGORY_KEYS.map((cat) => (
           <button
@@ -67,7 +70,7 @@ export default function ConverterPage() {
                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             )}
           >
-            {CATEGORIES[cat].label}
+            {t(`categories.${cat}`)}
           </button>
         ))}
       </div>
@@ -77,7 +80,7 @@ export default function ConverterPage() {
         type="number"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        aria-label="Value to convert"
+        aria-label={t("valueToConvert")}
         inputMode="decimal"
         className="w-full bg-secondary rounded-2xl px-4 py-4 text-4xl font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-ring"
       />
@@ -86,7 +89,7 @@ export default function ConverterPage() {
       <div
         className="flex gap-2 flex-wrap"
         role="group"
-        aria-label={`Unit to convert from (${cats.label})`}
+        aria-label={t("unitFromGroup", { category: t(`categories.${category}`) })}
       >
         {unitKeys.map((key) => (
           <button
@@ -107,7 +110,7 @@ export default function ConverterPage() {
 
       {/* TTS */}
       {numValue > 0 && (
-        <TTSButton text={fullTtsText} label="Read all conversions" />
+        <TTSButton text={fullTtsText} label={t("readAll")} />
       )}
 
       {/* Results grid */}
@@ -123,7 +126,7 @@ export default function ConverterPage() {
                 className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-1"
               >
                 <div className="text-muted-foreground text-sm font-medium">
-                  {unit.label}
+                  {t(`units.${key}`)}
                 </div>
                 <div className="flex items-baseline gap-1 flex-wrap min-w-0">
                   <span className="text-2xl font-bold leading-tight">

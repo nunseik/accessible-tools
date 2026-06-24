@@ -76,11 +76,11 @@ export default function NewNotePage() {
   return (
     <div className="flex flex-col min-h-svh p-4 gap-4">
       <header className="flex items-center gap-3 pt-2">
-        <Link href="/notes" aria-label="Back to notes" className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
+        <Link href="/notes" aria-label={t("backToNotes")} className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold flex-1">New Note</h1>
-        <button onClick={handleSave} aria-label="Save note"
+        <h1 className="text-2xl font-bold flex-1">{t("newTitle")}</h1>
+        <button onClick={handleSave} aria-label={t("saveAria")}
           className="p-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
           <Save className="w-5 h-5" />
         </button>
@@ -88,10 +88,10 @@ export default function NewNotePage() {
 
       <input
         type="text"
-        placeholder="Title (optional)"
+        placeholder={t("titlePlaceholderNew")}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        aria-label="Note title"
+        aria-label={t("titleAria")}
         className="w-full bg-secondary rounded-xl px-4 py-3 text-xl font-semibold placeholder:text-muted-foreground focus:outline-none focus-visible:ring-4 focus-visible:ring-ring"
       />
 
@@ -99,14 +99,14 @@ export default function NewNotePage() {
         <BlockEditor
           blocks={blocks}
           onChange={setBlocks}
-          placeholder="Start typing or tap the mic below to dictate…"
+          placeholder={t("contentPlaceholderNew")}
         />
       </div>
 
-      {plainText && <TTSButton text={plainText} label="Read note aloud" />}
+      {plainText && <TTSButton text={plainText} label={t("readAloud")} />}
 
       <div className="flex flex-col items-center gap-3 py-4">
-        <p className="text-muted-foreground text-sm">Tap to dictate</p>
+        <p className="text-muted-foreground text-sm">{t("tapToDictate")}</p>
         <VoiceInput onResult={handleVoiceResult} size="large" />
       </div>
 
@@ -117,7 +117,7 @@ export default function NewNotePage() {
           aria-controls="voice-hints"
           className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-inset min-h-[3rem]"
         >
-          <span>Voice commands</span>
+          <span>{t("voiceCommands")}</span>
           {hintsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
         {hintsOpen && (
@@ -134,7 +134,7 @@ export default function NewNotePage() {
 
       <button onClick={handleSave}
         className="w-full bg-primary text-primary-foreground rounded-2xl py-4 font-bold text-xl active:scale-95 transition-transform focus-visible:ring-4 focus-visible:ring-ring min-h-[4rem]">
-        Save Note
+        {t("saveButton")}
       </button>
     </div>
   );

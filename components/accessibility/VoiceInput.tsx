@@ -2,6 +2,7 @@
 import { Mic, MicOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useTranslations } from "next-intl";
 
 interface VoiceInputProps {
   onResult: (text: string) => void;
@@ -11,11 +12,12 @@ interface VoiceInputProps {
 
 export function VoiceInput({ onResult, className, size = "default" }: VoiceInputProps) {
   const { isListening, isSupported, start, stop } = useSpeechRecognition(onResult);
+  const t = useTranslations("a11y");
 
   if (!isSupported) {
     return (
       <p className="text-sm text-muted-foreground text-center">
-        Voice input not supported in this browser
+        {t("voiceUnsupported")}
       </p>
     );
   }
@@ -28,7 +30,7 @@ export function VoiceInput({ onResult, className, size = "default" }: VoiceInput
   return (
     <button
       onClick={handleToggle}
-      aria-label={isListening ? "Stop voice input" : "Start voice input"}
+      aria-label={isListening ? t("stopVoice") : t("startVoice")}
       aria-pressed={isListening}
       className={cn(
         "rounded-full flex items-center justify-center transition-all focus-visible:ring-4 focus-visible:ring-ring",

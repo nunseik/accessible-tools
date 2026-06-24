@@ -1,5 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSettings } from "@/hooks/useSettings";
+import { SPEECH_LANG } from "@/lib/i18n";
 
 interface UseSpeechRecognitionReturn {
   transcript: string;
@@ -18,6 +20,8 @@ export function useSpeechRecognition(
   const [isSupported, setIsSupported] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const onResultRef = useRef(onResult);
+  const { settings } = useSettings();
+  const lang = SPEECH_LANG[settings.locale] ?? "en-US";
 
   useEffect(() => {
     onResultRef.current = onResult;
@@ -35,7 +39,7 @@ export function useSpeechRecognition(
     const recognition = new SpeechRecognitionAPI();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = "en-US";
+    recognition.lang = lang;
 
     recognition.onresult = (event) => {
       let finalText = "";
@@ -58,7 +62,7 @@ export function useSpeechRecognition(
 
     recognitionRef.current = recognition;
     return () => recognition.abort();
-  }, [isSupported]);
+  }, [isSupported, lang]);
 
   const start = useCallback(() => {
     if (!recognitionRef.current) return;

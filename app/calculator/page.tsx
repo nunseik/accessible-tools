@@ -2,6 +2,7 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { TTSButton } from "@/components/accessibility/TTSButton";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
@@ -69,11 +70,14 @@ export default function CalculatorPage() {
   const [waitingForOperand, setWaitingForOperand] = useState(false);
   const { settings } = useSettings();
   const { speak, isSupported: ttsSupported } = useTextToSpeech();
+  const t = useTranslations("calculator");
+  const c = useTranslations("common");
+  const a11y = useTranslations("a11y");
 
   const TTS_LABELS: Record<string, string> = {
-    "÷": "divide", "×": "times", "−": "minus", "+": "plus", "%": "percent",
-    "⌫": "delete", "AC": "clear", "+/−": "plus minus", ".": "point",
-    "½": "one half", "⅓": "one third", "¼": "one quarter", "⅔": "two thirds", "¾": "three quarters",
+    "÷": t("tts.divide"), "×": t("tts.times"), "−": t("tts.minus"), "+": t("tts.plus"), "%": t("tts.percent"),
+    "⌫": t("tts.delete"), "AC": t("tts.clear"), "+/−": t("tts.plusMinus"), ".": t("tts.point"),
+    "½": t("tts.oneHalf"), "⅓": t("tts.oneThird"), "¼": t("tts.oneQuarter"), "⅔": t("tts.twoThirds"), "¾": t("tts.threeQuarters"),
   };
 
   const speakKey = useCallback((key: string) => {
@@ -102,9 +106,9 @@ export default function CalculatorPage() {
     setOp("");
     setWaitingForOperand(true);
     if (settings.autoReadResults && ttsSupported) {
-      speak(formatted, settings.speechRate);
+      speak(formatted === "Error" ? c("error") : formatted, settings.speechRate);
     }
-  }, [op, prev, display, settings, ttsSupported, speak]);
+  }, [op, prev, display, settings, ttsSupported, speak, c]);
 
   const setOperator = useCallback((operator: string) => {
     let currentDisplay = display;
@@ -133,15 +137,16 @@ export default function CalculatorPage() {
     setDisplay((d) => (d.startsWith("-") ? d.slice(1) : "-" + d));
   };
 
-  const displayLabel = `${prev ? prev + " " + op + " " : ""}${display}`;
+  const shownDisplay = display === "Error" ? c("error") : display;
+  const displayLabel = `${prev ? prev + " " + op + " " : ""}${shownDisplay}`;
 
   return (
     <div className="flex flex-col min-h-svh p-4 gap-4">
       <header className="flex items-center gap-3 pt-2">
-        <Link href="/" aria-label="Back to home" className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
+        <Link href="/" aria-label={a11y("backToHome")} className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold flex-1">Calculator</h1>
+        <h1 className="text-2xl font-bold flex-1">{t("title")}</h1>
       </header>
 
       {/* Display */}
@@ -154,10 +159,10 @@ export default function CalculatorPage() {
           aria-live="polite"
           aria-atomic="true"
         >
-          {display}
+          {shownDisplay}
         </div>
         <div className="mt-2 flex justify-end">
-          <TTSButton text={displayLabel} label="Read result" />
+          <TTSButton text={displayLabel} label={t("readResult")} />
         </div>
       </div>
 

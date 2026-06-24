@@ -1,31 +1,93 @@
-const COMMAND_MAP: [RegExp, string][] = [
-  // Paragraph break first so "new paragraph" doesn't match "new" in "new line"
-  [/\bnew paragraph\b/gi, '\n\n'],
-  // Line breaks
-  [/\bnew line\b/gi, '\n'],
-  [/\bnext line\b/gi, '\n'],
-  // Checklist items
-  [/\b(?:checkbox|check box|checklist item|check item|to do item|todo item)\b/gi, '\n- [ ] '],
-  // Bullets
-  [/\b(?:bullet point|new bullet)\b/gi, '\n- '],
-];
+import type { Locale } from "@/lib/db";
 
-export function processVoiceText(text: string): string {
+// Spoken dictation commands per locale. Order matters: the paragraph break must
+// come before the line break so "new paragraph" doesn't match "new" in
+// "new line". Recognition runs in the locale's language (see SPEECH_LANG), so
+// the trigger phrases here are the words a speaker actually says in that
+// language.
+const COMMAND_MAPS: Record<Locale, [RegExp, string][]> = {
+  en: [
+    [/\bnew paragraph\b/gi, "\n\n"],
+    [/\bnew line\b/gi, "\n"],
+    [/\bnext line\b/gi, "\n"],
+    [/\b(?:checkbox|check box|checklist item|check item|to do item|todo item)\b/gi, "\n- [ ] "],
+    [/\b(?:bullet point|new bullet)\b/gi, "\n- "],
+  ],
+  "pt-BR": [
+    [/\bnovo parágrafo\b/gi, "\n\n"],
+    [/\bnova linha\b/gi, "\n"],
+    [/\bpróxima linha\b/gi, "\n"],
+    [/\b(?:caixa de seleção|item de lista|item de tarefa|tarefa)\b/gi, "\n- [ ] "],
+    [/\b(?:marcador|novo marcador|item de marcador)\b/gi, "\n- "],
+  ],
+  es: [
+    [/\bnuevo párrafo\b/gi, "\n\n"],
+    [/\bnueva línea\b/gi, "\n"],
+    [/\bsalto de línea\b/gi, "\n"],
+    [/\b(?:casilla|casilla de verificación|tarea|elemento de tarea)\b/gi, "\n- [ ] "],
+    [/\b(?:viñeta|nueva viñeta|punto)\b/gi, "\n- "],
+  ],
+};
+
+export function processVoiceText(text: string, locale: Locale = "en"): string {
   let result = text;
-  for (const [pattern, replacement] of COMMAND_MAP) {
+  for (const [pattern, replacement] of COMMAND_MAPS[locale] ?? COMMAND_MAPS.en) {
     result = result.replace(pattern, replacement);
   }
   return result
-    .replace(/ *\n */g, '\n')
-    .replace(/\n{3,}/g, '\n\n')
+    .replace(/ *\n */g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
     .trimEnd();
 }
 
-export const VOICE_COMMAND_HINTS: { command: string; result: string }[] = [
-  { command: '"new line"', result: 'line break' },
-  { command: '"new paragraph"', result: 'paragraph break' },
-  { command: '"bullet point"', result: '• bullet item' },
-  { command: '"checkbox"', result: '☐ to-do item' },
-  { command: '"checklist item"', result: '☐ to-do item' },
-  { command: '"todo item"', result: '☐ to-do item' },
-];
+// Display hints shown in the "Voice commands" panel — the example phrase the
+// user can say and what it produces, in each language.
+const HINTS: Record<Locale, { command: string; result: string }[]> = {
+  en: [
+    { command: '"new line"', result: "line break" },
+    { command: '"new paragraph"', result: "paragraph break" },
+    { command: '"bullet point"', result: "• bullet item" },
+    { command: '"checkbox"', result: "☐ to-do item" },
+  ],
+  "pt-BR": [
+    { command: '"nova linha"', result: "quebra de linha" },
+    { command: '"novo parágrafo"', result: "quebra de parágrafo" },
+    { command: '"marcador"', result: "• item com marcador" },
+    { command: '"tarefa"', result: "☐ item de tarefa" },
+  ],
+  es: [
+    { command: '"nueva línea"', result: "salto de línea" },
+    { command: '"nuevo párrafo"', result: "salto de párrafo" },
+    { command: '"viñeta"', result: "• elemento con viñeta" },
+    { command: '"tarea"', result: "☐ elemento de tarea" },
+  ],
+};
+
+export function getVoiceCommandHints(locale: Locale = "en") {
+  return HINTS[locale] ?? HINTS.en;
+}
+
+// Cook-mode navigation keywords. handleVoiceCommand checks whether the
+// recognized text includes any of these, so they must be in the spoken
+// language.
+const COOK_COMMANDS: Record<Locale, { next: string[]; back: string[]; repeat: string[] }> = {
+  en: {
+    next: ["next", "forward"],
+    back: ["back", "previous"],
+    repeat: ["repeat", "again"],
+  },
+  "pt-BR": {
+    next: ["próximo", "próxima", "avançar", "seguinte"],
+    back: ["voltar", "anterior"],
+    repeat: ["repetir", "de novo", "novamente"],
+  },
+  es: {
+    next: ["siguiente", "próximo", "adelante"],
+    back: ["atrás", "anterior", "volver"],
+    repeat: ["repetir", "otra vez", "de nuevo"],
+  },
+};
+
+export function getCookCommands(locale: Locale = "en") {
+  return COOK_COMMANDS[locale] ?? COOK_COMMANDS.en;
+}

@@ -2,6 +2,7 @@
 import { Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { useTranslations } from "next-intl";
 
 interface TTSButtonProps {
   text: string;
@@ -9,8 +10,12 @@ interface TTSButtonProps {
   label?: string;
 }
 
-export function TTSButton({ text, className, label = "Read aloud" }: TTSButtonProps) {
+export function TTSButton({ text, className, label }: TTSButtonProps) {
   const { speak, stop, isSpeaking, isSupported } = useTextToSpeech();
+  const t = useTranslations("a11y");
+  const c = useTranslations("common");
+  const fallback = t("readAloud");
+  const resolvedLabel = label ?? fallback;
 
   if (!isSupported) return null;
 
@@ -22,7 +27,7 @@ export function TTSButton({ text, className, label = "Read aloud" }: TTSButtonPr
   return (
     <button
       onClick={handleToggle}
-      aria-label={isSpeaking ? "Stop reading" : label}
+      aria-label={isSpeaking ? t("stopReading") : resolvedLabel}
       aria-pressed={isSpeaking}
       className={cn(
         "flex items-center gap-2 rounded-xl px-4 py-3 min-h-[3rem] font-medium transition-all",
@@ -33,7 +38,7 @@ export function TTSButton({ text, className, label = "Read aloud" }: TTSButtonPr
       )}
     >
       {isSpeaking ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-      <span>{isSpeaking ? "Stop" : label}</span>
+      <span>{isSpeaking ? c("stop") : resolvedLabel}</span>
     </button>
   );
 }
