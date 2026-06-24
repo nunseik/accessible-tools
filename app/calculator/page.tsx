@@ -50,6 +50,21 @@ function parseFraction(s: string): number {
   return map[s] ?? parseFloat(s);
 }
 
+function computeResult(prev: string, op: string, current: string): string {
+  const a = parseFraction(prev);
+  const b = parseFraction(current);
+  let result: number;
+  switch (op) {
+    case "+": result = a + b; break;
+    case "−": result = a - b; break;
+    case "×": result = a * b; break;
+    case "÷": result = b !== 0 ? a / b : NaN; break;
+    case "%": result = a % b; break;
+    default: return current;
+  }
+  return isNaN(result) ? "Error" : parseFloat(result.toPrecision(10)).toString();
+}
+
 export default function CalculatorPage() {
   const [display, setDisplay] = useState("0");
   const [prev, setPrev] = useState("");
@@ -59,12 +74,13 @@ export default function CalculatorPage() {
   const [unit, setUnit] = useState("");
 
   const input = useCallback((digit: string) => {
+    if (waitingForOperand) {
+      setWaitingForOperand(false);
+      setDisplay(digit === "." ? "0." : digit);
+      return;
+    }
     setDisplay((d) => {
-      if (waitingForOperand) {
-        setWaitingForOperand(false);
-        return digit;
-      }
-      if (d === "0" && digit !== ".") return digit;
+      if ((d === "0" || COOKING_FRACTIONS.includes(d)) && digit !== ".") return digit;
       if (digit === "." && d.includes(".")) return d;
       return d + digit;
     });
@@ -72,18 +88,7 @@ export default function CalculatorPage() {
 
   const calculate = useCallback(() => {
     if (!op || !prev) return;
-    const a = parseFraction(prev);
-    const b = parseFraction(display);
-    let result: number;
-    switch (op) {
-      case "+": result = a + b; break;
-      case "−": result = a - b; break;
-      case "×": result = a * b; break;
-      case "÷": result = b !== 0 ? a / b : NaN; break;
-      case "%": result = a % b; break;
-      default: return;
-    }
-    const formatted = isNaN(result) ? "Error" : parseFloat(result.toPrecision(10)).toString();
+    const formatted = computeResult(prev, op, display);
     setDisplay(formatted);
     setPrev("");
     setOp("");
@@ -91,11 +96,16 @@ export default function CalculatorPage() {
   }, [op, prev, display]);
 
   const setOperator = useCallback((operator: string) => {
-    if (op && !waitingForOperand) calculate();
-    setPrev(display);
+    let currentDisplay = display;
+    if (op && !waitingForOperand) {
+      const result = computeResult(prev, op, display);
+      setDisplay(result);
+      currentDisplay = result;
+    }
+    setPrev(currentDisplay);
     setOp(operator);
     setWaitingForOperand(true);
-  }, [op, waitingForOperand, display, calculate]);
+  }, [op, waitingForOperand, display, prev]);
 
   const clear = () => {
     setDisplay("0");
@@ -177,7 +187,7 @@ export default function CalculatorPage() {
       {mode === "cooking" && (
         <div className="grid grid-cols-5 gap-2">
           {COOKING_FRACTIONS.map((f) => (
-            <CalcButton key={f} label={f} onClick={() => { setDisplay(f); setWaitingForOperand(true); }} variant="special" />
+            <CalcButton key={f} label={f} onClick={() => { setDisplay(f); setWaitingForOperand(false); }} variant="special" />
           ))}
         </div>
       )}

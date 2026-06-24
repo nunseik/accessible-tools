@@ -10,16 +10,13 @@ interface UseTextToSpeechReturn {
 
 export function useTextToSpeech(): UseTextToSpeechReturn {
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSupported, setIsSupported] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  const isSupported =
-    typeof window !== "undefined" && "speechSynthesis" in window;
-
   useEffect(() => {
-    return () => {
-      if (isSupported) window.speechSynthesis.cancel();
-    };
-  }, [isSupported]);
+    setIsSupported("speechSynthesis" in window);
+    return () => { window.speechSynthesis?.cancel(); };
+  }, []);
 
   const speak = useCallback(
     (text: string, rate = 0.9) => {
