@@ -62,11 +62,11 @@ export default function SettingsPage() {
               : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
           }`}
         >
-          <span className="font-medium">Auto-read results</span>
+          <span className="font-medium">Read calculator aloud</span>
           <span className="text-sm opacity-80">{settings.autoReadResults ? "On" : "Off"}</span>
         </button>
         <p className="text-muted-foreground text-sm">
-          Speaks the result aloud after pressing =
+          Speaks keys and results as you use the calculator
         </p>
       </section>
 
