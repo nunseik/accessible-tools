@@ -17,6 +17,11 @@ export function useSpeechRecognition(
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const onResultRef = useRef(onResult);
+
+  useEffect(() => {
+    onResultRef.current = onResult;
+  }, [onResult]);
 
   useEffect(() => {
     setIsSupported("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
@@ -45,7 +50,7 @@ export function useSpeechRecognition(
       }
       const combined = finalText || interimText;
       setTranscript(combined);
-      if (finalText && onResult) onResult(finalText.trim());
+      if (finalText) onResultRef.current?.(finalText.trim());
     };
 
     recognition.onerror = () => setIsListening(false);
@@ -53,7 +58,6 @@ export function useSpeechRecognition(
 
     recognitionRef.current = recognition;
     return () => recognition.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSupported]);
 
   const start = useCallback(() => {
