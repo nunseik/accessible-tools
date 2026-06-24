@@ -70,6 +70,17 @@ export default function CalculatorPage() {
   const { settings } = useSettings();
   const { speak, isSupported: ttsSupported } = useTextToSpeech();
 
+  const TTS_LABELS: Record<string, string> = {
+    "÷": "divide", "×": "times", "−": "minus", "+": "plus", "%": "percent",
+    "⌫": "delete", "AC": "clear", "+/−": "plus minus", ".": "point",
+    "½": "one half", "⅓": "one third", "¼": "one quarter", "⅔": "two thirds", "¾": "three quarters",
+  };
+
+  const speakKey = useCallback((key: string) => {
+    if (!settings.autoReadResults || !ttsSupported) return;
+    speak(TTS_LABELS[key] ?? key, settings.speechRate);
+  }, [settings, ttsSupported, speak]);
+
   const input = useCallback((digit: string) => {
     if (waitingForOperand) {
       setWaitingForOperand(false);
@@ -153,35 +164,35 @@ export default function CalculatorPage() {
       {/* Fraction buttons */}
       <div className="grid grid-cols-5 gap-2">
         {FRACTIONS.map((f) => (
-          <CalcButton key={f} label={f} onClick={() => { setDisplay(f); setWaitingForOperand(false); }} variant="special" />
+          <CalcButton key={f} label={f} onClick={() => { speakKey(f); setDisplay(f); setWaitingForOperand(false); }} variant="special" />
         ))}
       </div>
 
       {/* Main keypad */}
       <div className="grid grid-cols-4 gap-3 flex-1">
-        <CalcButton label="AC" onClick={clear} variant="clear" />
-        <CalcButton label="+/−" onClick={toggleSign} variant="special" />
-        <CalcButton label="⌫" onClick={backspace} variant="special" />
-        <CalcButton label="÷" onClick={() => setOperator("÷")} variant="operator" />
+        <CalcButton label="AC" onClick={() => { speakKey("AC"); clear(); }} variant="clear" />
+        <CalcButton label="+/−" onClick={() => { speakKey("+/−"); toggleSign(); }} variant="special" />
+        <CalcButton label="⌫" onClick={() => { speakKey("⌫"); backspace(); }} variant="special" />
+        <CalcButton label="÷" onClick={() => { speakKey("÷"); setOperator("÷"); }} variant="operator" />
 
-        <CalcButton label="7" onClick={() => input("7")} />
-        <CalcButton label="8" onClick={() => input("8")} />
-        <CalcButton label="9" onClick={() => input("9")} />
-        <CalcButton label="×" onClick={() => setOperator("×")} variant="operator" />
+        <CalcButton label="7" onClick={() => { speakKey("7"); input("7"); }} />
+        <CalcButton label="8" onClick={() => { speakKey("8"); input("8"); }} />
+        <CalcButton label="9" onClick={() => { speakKey("9"); input("9"); }} />
+        <CalcButton label="×" onClick={() => { speakKey("×"); setOperator("×"); }} variant="operator" />
 
-        <CalcButton label="4" onClick={() => input("4")} />
-        <CalcButton label="5" onClick={() => input("5")} />
-        <CalcButton label="6" onClick={() => input("6")} />
-        <CalcButton label="−" onClick={() => setOperator("−")} variant="operator" />
+        <CalcButton label="4" onClick={() => { speakKey("4"); input("4"); }} />
+        <CalcButton label="5" onClick={() => { speakKey("5"); input("5"); }} />
+        <CalcButton label="6" onClick={() => { speakKey("6"); input("6"); }} />
+        <CalcButton label="−" onClick={() => { speakKey("−"); setOperator("−"); }} variant="operator" />
 
-        <CalcButton label="1" onClick={() => input("1")} />
-        <CalcButton label="2" onClick={() => input("2")} />
-        <CalcButton label="3" onClick={() => input("3")} />
-        <CalcButton label="+" onClick={() => setOperator("+")} variant="operator" />
+        <CalcButton label="1" onClick={() => { speakKey("1"); input("1"); }} />
+        <CalcButton label="2" onClick={() => { speakKey("2"); input("2"); }} />
+        <CalcButton label="3" onClick={() => { speakKey("3"); input("3"); }} />
+        <CalcButton label="+" onClick={() => { speakKey("+"); setOperator("+"); }} variant="operator" />
 
-        <CalcButton label="." onClick={() => input(".")} />
-        <CalcButton label="0" onClick={() => input("0")} />
-        <CalcButton label="%" onClick={() => setOperator("%")} variant="special" />
+        <CalcButton label="." onClick={() => { speakKey("."); input("."); }} />
+        <CalcButton label="0" onClick={() => { speakKey("0"); input("0"); }} />
+        <CalcButton label="%" onClick={() => { speakKey("%"); setOperator("%"); }} variant="special" />
         <CalcButton label="=" onClick={calculate} variant="equals" />
       </div>
     </div>

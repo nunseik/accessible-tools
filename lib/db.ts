@@ -50,7 +50,17 @@ db.version(2).stores({
   settings: "id",
 }).upgrade((tx) =>
   tx.table("settings").toCollection().modify((s) => {
-    s.autoReadResults = false;
+    s.autoReadResults = true;
+  })
+);
+
+db.version(3).stores({
+  notes: "++id, title, createdAt, updatedAt",
+  recipes: "++id, title, createdAt",
+  settings: "id",
+}).upgrade((tx) =>
+  tx.table("settings").toCollection().modify((s) => {
+    s.autoReadResults = true;
   })
 );
 
@@ -61,7 +71,7 @@ db.on("populate", () => {
     theme: "light",
     speechRate: 0.9,
     voiceURI: "",
-    autoReadResults: false,
+    autoReadResults: true,
   });
 });
 
