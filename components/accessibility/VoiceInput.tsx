@@ -33,7 +33,7 @@ export function VoiceInput({ onResult, className, size = "default" }: VoiceInput
       className={cn(
         "rounded-full flex items-center justify-center transition-all focus-visible:ring-4 focus-visible:ring-ring",
         size === "large"
-          ? "w-24 h-24 text-4xl"
+          ? "w-32 h-32 text-5xl"
           : "w-16 h-16 text-2xl",
         isListening
           ? "bg-destructive text-destructive-foreground animate-pulse shadow-lg shadow-destructive/40"

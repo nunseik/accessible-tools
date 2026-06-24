@@ -51,7 +51,7 @@ export default function Home() {
         </Link>
       </header>
 
-      <div className="grid grid-cols-2 gap-4 flex-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
         {TOOLS.map((tool) => (
           <Link
             key={tool.href}
