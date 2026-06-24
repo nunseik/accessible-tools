@@ -188,6 +188,11 @@ export default function RecipeDetailPage({ params }: { params: Promise<{ id: str
                   <p className="text-xl leading-relaxed">{step}</p>
                 </div>
               ))}
+              {recipe.source && (
+                <p className="text-sm text-muted-foreground text-center pt-2">
+                  Recipe from {recipe.source}
+                </p>
+              )}
             </div>
           )}
         </>

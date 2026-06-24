@@ -4,6 +4,20 @@ import { ArrowLeft } from "lucide-react";
 import { FontSizeControl } from "@/components/accessibility/FontSizeControl";
 import { ThemeControl } from "@/components/accessibility/ThemeControl";
 import { useSettings } from "@/hooks/useSettings";
+import { db, EXAMPLE_RECIPES } from "@/lib/db";
+import { toast } from "sonner";
+
+async function restoreExamples() {
+  const existing = await db.recipes.toArray();
+  const existingTitles = new Set(existing.map((r) => r.title));
+  const toAdd = EXAMPLE_RECIPES.filter((r) => !existingTitles.has(r.title));
+  if (toAdd.length === 0) {
+    toast.info("Example recipes are already in your collection");
+    return;
+  }
+  await db.recipes.bulkAdd(toAdd.map((r) => ({ ...r, createdAt: new Date() })));
+  toast.success(`${toAdd.length} example recipe${toAdd.length > 1 ? "s" : ""} restored`);
+}
 
 export default function SettingsPage() {
   const { settings, updateSettings } = useSettings();
@@ -67,6 +81,19 @@ export default function SettingsPage() {
         </button>
         <p className="text-muted-foreground text-sm">
           Speaks keys and results as you use the calculator
+        </p>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="font-bold text-xl">Recipes</h2>
+        <button
+          onClick={restoreExamples}
+          className="flex items-center justify-between p-4 rounded-2xl min-h-[4rem] bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all focus-visible:ring-4 focus-visible:ring-ring"
+        >
+          <span className="font-medium">Restore example recipes</span>
+        </button>
+        <p className="text-muted-foreground text-sm">
+          Re-adds the built-in example recipes if you deleted them
         </p>
       </section>
 
