@@ -70,6 +70,29 @@ await db.notes.delete(id);
 
 The service worker caches pages on first visit. After any route change, update `STATIC_ASSETS` in `public/sw.js` and bump `CACHE_NAME` to force users to get the new worker.
 
+## Browser API hooks — SSR safety rule
+
+Any hook that checks browser API availability (`speechSynthesis`, `SpeechRecognition`, etc.) **must not** compute `isSupported` inline during render. Doing so causes a hydration mismatch (server: `false`, client: `true`) that forces React to re-render the whole page, breaking event handlers.
+
+**Always use this pattern:**
+
+```ts
+const [isSupported, setIsSupported] = useState(false);
+useEffect(() => {
+  setIsSupported("speechSynthesis" in window);
+}, []);
+```
+
+Both server and client renders start with `false`; the client updates after mount. Applies to `useTextToSpeech`, `useSpeechRecognition`, and any future hook that touches browser-only APIs.
+
+## Calculator — state update rules
+
+The calculator in `app/calculator/page.tsx` uses several `useCallback` hooks that close over state. Two invariants to maintain:
+
+1. **Never call a sibling state setter inside a `setDisplay` functional updater.** Set state in sequence at the top level of the callback instead (React 18 batches them).
+2. **Never chain async state updates across callbacks.** If `setOperator` needs the result of a calculation to pass to `setPrev`, compute it synchronously with the pure `computeResult(prev, op, display)` helper — don't call `calculate()` and then read `display` from the closure.
+3. **Fraction buttons must set `waitingForOperand = false`.** Setting it to `true` (same as after an operator press) causes the next operator to skip computing the pending operation. Fraction input is a value, not an operator.
+
 ## Deployment
 
 ```bash

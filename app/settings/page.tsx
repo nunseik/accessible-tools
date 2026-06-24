@@ -51,6 +51,25 @@ export default function SettingsPage() {
         </p>
       </section>
 
+      <section className="flex flex-col gap-4">
+        <h2 className="font-bold text-xl">Calculator</h2>
+        <button
+          aria-pressed={settings.autoReadResults}
+          onClick={() => updateSettings({ autoReadResults: !settings.autoReadResults })}
+          className={`flex items-center justify-between p-4 rounded-2xl min-h-[4rem] transition-all focus-visible:ring-4 focus-visible:ring-ring ${
+            settings.autoReadResults
+              ? "bg-primary text-primary-foreground"
+              : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+          }`}
+        >
+          <span className="font-medium">Auto-read results</span>
+          <span className="text-sm opacity-80">{settings.autoReadResults ? "On" : "Off"}</span>
+        </button>
+        <p className="text-muted-foreground text-sm">
+          Speaks the result aloud after pressing =
+        </p>
+      </section>
+
       <section className="flex flex-col gap-4 mt-auto pt-4 border-t border-border">
         <p className="text-muted-foreground text-sm text-center">
           AccessiTools — All data stored locally on your device.

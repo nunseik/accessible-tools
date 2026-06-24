@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS: Settings = {
   theme: "light",
   speechRate: 0.9,
   voiceURI: "",
+  autoReadResults: false,
 };
 
 export function useSettings() {

@@ -6,7 +6,7 @@ const TOOLS = [
     href: "/calculator",
     icon: <Calculator className="w-12 h-12" />,
     label: "Calculator",
-    description: "Standard, cooking & construction modes",
+    description: "Numbers, fractions, and basic arithmetic",
     color: "bg-blue-600 text-white",
   },
   {

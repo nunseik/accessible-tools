@@ -4,13 +4,10 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TTSButton } from "@/components/accessibility/TTSButton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { useSettings } from "@/hooks/useSettings";
 
-type CalcMode = "standard" | "cooking" | "construction";
-
-const COOKING_FRACTIONS = ["½", "⅓", "¼", "⅔", "¾"];
-const COOKING_UNITS = ["tsp", "tbsp", "cup", "oz"];
-const CONSTRUCTION_UNITS = ["in", "ft", "yd", "cm", "m"];
+const FRACTIONS = ["½", "⅓", "¼", "⅔", "¾"];
 
 function CalcButton({
   label,
@@ -70,8 +67,8 @@ export default function CalculatorPage() {
   const [prev, setPrev] = useState("");
   const [op, setOp] = useState("");
   const [waitingForOperand, setWaitingForOperand] = useState(false);
-  const [mode, setMode] = useState<CalcMode>("standard");
-  const [unit, setUnit] = useState("");
+  const { settings } = useSettings();
+  const { speak, isSupported: ttsSupported } = useTextToSpeech();
 
   const input = useCallback((digit: string) => {
     if (waitingForOperand) {
@@ -80,7 +77,7 @@ export default function CalculatorPage() {
       return;
     }
     setDisplay((d) => {
-      if ((d === "0" || COOKING_FRACTIONS.includes(d)) && digit !== ".") return digit;
+      if ((d === "0" || FRACTIONS.includes(d)) && digit !== ".") return digit;
       if (digit === "." && d.includes(".")) return d;
       return d + digit;
     });
@@ -93,7 +90,10 @@ export default function CalculatorPage() {
     setPrev("");
     setOp("");
     setWaitingForOperand(true);
-  }, [op, prev, display]);
+    if (settings.autoReadResults && ttsSupported) {
+      speak(formatted, settings.speechRate);
+    }
+  }, [op, prev, display, settings, ttsSupported, speak]);
 
   const setOperator = useCallback((operator: string) => {
     let currentDisplay = display;
@@ -122,7 +122,7 @@ export default function CalculatorPage() {
     setDisplay((d) => (d.startsWith("-") ? d.slice(1) : "-" + d));
   };
 
-  const displayLabel = `${prev ? prev + " " + op + " " : ""}${display}${unit ? " " + unit : ""}`;
+  const displayLabel = `${prev ? prev + " " + op + " " : ""}${display}`;
 
   return (
     <div className="flex flex-col min-h-svh p-4 gap-4">
@@ -133,64 +133,29 @@ export default function CalculatorPage() {
         <h1 className="text-2xl font-bold flex-1">Calculator</h1>
       </header>
 
-      <Tabs value={mode} onValueChange={(v) => setMode(v as CalcMode)}>
-        <TabsList className="w-full">
-          <TabsTrigger value="standard" className="flex-1">Standard</TabsTrigger>
-          <TabsTrigger value="cooking" className="flex-1">Cooking</TabsTrigger>
-          <TabsTrigger value="construction" className="flex-1">Build</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
       {/* Display */}
       <div className="bg-secondary rounded-2xl p-4 text-right">
         {prev && op && (
           <div className="text-muted-foreground text-lg mb-1">{prev} {op}</div>
         )}
-        <div className="text-5xl font-bold tracking-tight break-all leading-tight">
+        <div
+          className="text-5xl font-bold tracking-tight break-all leading-tight"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {display}
-          {unit && <span className="text-2xl text-muted-foreground ml-2">{unit}</span>}
         </div>
         <div className="mt-2 flex justify-end">
           <TTSButton text={displayLabel} label="Read result" />
         </div>
       </div>
 
-      {/* Unit selector for cooking/construction */}
-      {mode === "cooking" && (
-        <div className="flex gap-2 flex-wrap">
-          {COOKING_UNITS.map((u) => (
-            <button key={u} onClick={() => setUnit(unit === u ? "" : u)}
-              aria-pressed={unit === u}
-              className={cn("px-3 py-2 rounded-xl font-medium text-sm min-h-[3rem] transition-all",
-                unit === u ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-              )}>
-              {u}
-            </button>
-          ))}
-        </div>
-      )}
-      {mode === "construction" && (
-        <div className="flex gap-2 flex-wrap">
-          {CONSTRUCTION_UNITS.map((u) => (
-            <button key={u} onClick={() => setUnit(unit === u ? "" : u)}
-              aria-pressed={unit === u}
-              className={cn("px-3 py-2 rounded-xl font-medium text-sm min-h-[3rem] transition-all",
-                unit === u ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-              )}>
-              {u}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Fraction buttons for cooking */}
-      {mode === "cooking" && (
-        <div className="grid grid-cols-5 gap-2">
-          {COOKING_FRACTIONS.map((f) => (
-            <CalcButton key={f} label={f} onClick={() => { setDisplay(f); setWaitingForOperand(false); }} variant="special" />
-          ))}
-        </div>
-      )}
+      {/* Fraction buttons */}
+      <div className="grid grid-cols-5 gap-2">
+        {FRACTIONS.map((f) => (
+          <CalcButton key={f} label={f} onClick={() => { setDisplay(f); setWaitingForOperand(false); }} variant="special" />
+        ))}
+      </div>
 
       {/* Main keypad */}
       <div className="grid grid-cols-4 gap-3 flex-1">

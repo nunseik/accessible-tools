@@ -29,6 +29,7 @@ export interface Settings {
   theme: "light" | "dark" | "high-contrast";
   speechRate: number;
   voiceURI: string;
+  autoReadResults: boolean;
 }
 
 const db = new Dexie("AccessiTools") as Dexie & {
@@ -43,6 +44,16 @@ db.version(1).stores({
   settings: "id",
 });
 
+db.version(2).stores({
+  notes: "++id, title, createdAt, updatedAt",
+  recipes: "++id, title, createdAt",
+  settings: "id",
+}).upgrade((tx) =>
+  tx.table("settings").toCollection().modify((s) => {
+    s.autoReadResults = false;
+  })
+);
+
 db.on("populate", () => {
   db.settings.add({
     id: "singleton",
@@ -50,6 +61,7 @@ db.on("populate", () => {
     theme: "light",
     speechRate: 0.9,
     voiceURI: "",
+    autoReadResults: false,
   });
 });
 
