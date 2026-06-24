@@ -102,6 +102,8 @@ export const EXAMPLE_RECIPES: Omit<Recipe, "id" | "createdAt">[] = [
   },
 ];
 
+export type Locale = "en" | "pt-BR" | "es";
+
 export interface Settings {
   id: "singleton";
   fontSize: "normal" | "large" | "xlarge" | "huge";
@@ -109,6 +111,7 @@ export interface Settings {
   speechRate: number;
   voiceURI: string;
   autoReadResults: boolean;
+  locale: Locale;
 }
 
 const db = new Dexie("AccessiTools") as Dexie & {
@@ -156,6 +159,16 @@ db.version(4).stores({
   }
 });
 
+db.version(5).stores({
+  notes: "++id, title, createdAt, updatedAt",
+  recipes: "++id, title, createdAt",
+  settings: "id",
+}).upgrade((tx) =>
+  tx.table("settings").toCollection().modify((s) => {
+    if (!s.locale) s.locale = "en";
+  })
+);
+
 db.on("populate", () => {
   db.settings.add({
     id: "singleton",
@@ -164,6 +177,7 @@ db.on("populate", () => {
     speechRate: 0.9,
     voiceURI: "",
     autoReadResults: true,
+    locale: "en",
   });
   db.recipes.bulkAdd(
     EXAMPLE_RECIPES.map((r) => ({ ...r, createdAt: new Date() }))

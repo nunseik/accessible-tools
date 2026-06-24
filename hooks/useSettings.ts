@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS: Settings = {
   speechRate: 0.9,
   voiceURI: "",
   autoReadResults: true,
+  locale: "en",
 };
 
 export function useSettings() {

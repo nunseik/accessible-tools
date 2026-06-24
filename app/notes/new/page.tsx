@@ -2,25 +2,32 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, ChevronDown, ChevronUp } from "lucide-react";
 import { db } from "@/lib/db";
 import { VoiceInput } from "@/components/accessibility/VoiceInput";
 import { TTSButton } from "@/components/accessibility/TTSButton";
+import { BlockEditor } from "@/components/notes/BlockEditor";
+import { Block, blocksToMarkdown, blocksToPlainText, genId, markdownToBlocks } from "@/lib/noteBlocks";
+import { processVoiceText, VOICE_COMMAND_HINTS } from "@/lib/voiceCommands";
 import { toast } from "sonner";
+
+const INITIAL_BLOCKS: Block[] = [{ id: "b0", type: "text", content: "" }];
 
 export default function NewNotePage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [blocks, setBlocks] = useState<Block[]>(INITIAL_BLOCKS);
+  const [hintsOpen, setHintsOpen] = useState(false);
 
   async function handleSave() {
-    if (!content.trim() && !title.trim()) {
+    const content = blocksToMarkdown(blocks).trim();
+    if (!content && !title.trim()) {
       toast.error("Please add some content before saving");
       return;
     }
     await db.notes.add({
       title: title.trim() || "Untitled",
-      content: content.trim(),
+      content,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -28,9 +35,38 @@ export default function NewNotePage() {
     router.push("/notes");
   }
 
-  function handleVoiceResult(text: string) {
-    setContent((c) => (c ? c + " " + text : text));
+  function handleVoiceResult(rawText: string) {
+    const processed = processVoiceText(rawText);
+    const incoming = markdownToBlocks(processed.replace(/^\n+/, ""));
+
+    setBlocks((current) => {
+      if (incoming.length === 0) return current;
+
+      const result = [...current];
+      const last = result[result.length - 1];
+      const first = incoming[0];
+
+      // Replace the initial empty block
+      if (result.length === 1 && last.type === "text" && last.content === "") {
+        return incoming.map((b) => ({ ...b, id: genId() }));
+      }
+
+      // Merge leading text into last text block
+      if (first.type === "text" && last.type === "text") {
+        result[result.length - 1] = {
+          ...last,
+          content: last.content ? `${last.content} ${first.content}` : first.content,
+        };
+        result.push(...incoming.slice(1).map((b) => ({ ...b, id: genId() })));
+      } else {
+        result.push(...incoming.map((b) => ({ ...b, id: genId() })));
+      }
+
+      return result;
+    });
   }
+
+  const plainText = blocksToPlainText(blocks);
 
   return (
     <div className="flex flex-col min-h-svh p-4 gap-4">
@@ -54,22 +90,41 @@ export default function NewNotePage() {
         className="w-full bg-secondary rounded-xl px-4 py-3 text-xl font-semibold placeholder:text-muted-foreground focus:outline-none focus-visible:ring-4 focus-visible:ring-ring"
       />
 
-      <textarea
-        placeholder="Start typing or tap the mic below to dictate..."
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        aria-label="Note content"
-        rows={8}
-        className="w-full flex-1 bg-secondary rounded-xl px-4 py-3 text-xl placeholder:text-muted-foreground resize-none focus:outline-none focus-visible:ring-4 focus-visible:ring-ring leading-relaxed"
-      />
+      <div className="flex-1 bg-secondary rounded-xl px-4 py-3 min-h-[12rem]">
+        <BlockEditor
+          blocks={blocks}
+          onChange={setBlocks}
+          placeholder="Start typing or tap the mic below to dictate…"
+        />
+      </div>
 
-      {content && (
-        <TTSButton text={content} label="Read note aloud" />
-      )}
+      {plainText && <TTSButton text={plainText} label="Read note aloud" />}
 
       <div className="flex flex-col items-center gap-3 py-4">
         <p className="text-muted-foreground text-sm">Tap to dictate</p>
         <VoiceInput onResult={handleVoiceResult} size="large" />
+      </div>
+
+      <div className="rounded-xl bg-secondary overflow-hidden">
+        <button
+          onClick={() => setHintsOpen((o) => !o)}
+          aria-expanded={hintsOpen}
+          aria-controls="voice-hints"
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-inset min-h-[3rem]"
+        >
+          <span>Voice commands</span>
+          {hintsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+        {hintsOpen && (
+          <div id="voice-hints" className="px-4 pb-4 grid grid-cols-1 gap-2">
+            {VOICE_COMMAND_HINTS.map(({ command, result }) => (
+              <div key={command} className="flex items-center justify-between gap-4 text-sm">
+                <code className="bg-background rounded-md px-2 py-1 font-mono text-foreground">{command}</code>
+                <span className="text-muted-foreground">{result}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <button onClick={handleSave}

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { I18nProvider } from "@/components/I18nProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 
@@ -39,9 +40,11 @@ export default function RootLayout({
     <html lang="en" className={`${geist.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider>
-          {children}
-          <Toaster position="top-center" />
-          <ServiceWorkerRegistration />
+          <I18nProvider>
+            {children}
+            <Toaster position="top-center" />
+            <ServiceWorkerRegistration />
+          </I18nProvider>
         </ThemeProvider>
       </body>
     </html>
