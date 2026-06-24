@@ -1,7 +1,6 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { ArrowLeft, Save, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { db } from "@/lib/db";
 import { VoiceInput } from "@/components/accessibility/VoiceInput";
@@ -24,15 +23,35 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [hintsOpen, setHintsOpen] = useState(false);
+  const savedMarkdownRef = useRef("");
+  const savedTitleRef = useRef("");
 
   useEffect(() => {
     db.notes.get(parseInt(id)).then((note) => {
       if (!note) { router.push("/notes"); return; }
       setTitle(note.title);
       setBlocks(markdownToBlocks(note.content));
+      savedTitleRef.current = note.title;
+      savedMarkdownRef.current = note.content;
       setLoaded(true);
     });
   }, [id, router]);
+
+  async function handleBack() {
+    const currentMarkdown = blocksToMarkdown(blocks).trim();
+    const currentTitle = title.trim();
+    if (currentMarkdown !== savedMarkdownRef.current || currentTitle !== savedTitleRef.current) {
+      await db.notes.update(parseInt(id), {
+        title: currentTitle || t("untitled"),
+        content: currentMarkdown,
+        updatedAt: new Date(),
+      });
+      savedMarkdownRef.current = currentMarkdown;
+      savedTitleRef.current = currentTitle;
+      toast.success(t("toastSaved"));
+    }
+    router.push("/notes");
+  }
 
   async function handleSave() {
     await db.notes.update(parseInt(id), {
@@ -113,9 +132,9 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
   return (
     <div className="flex flex-col min-h-svh p-4 gap-4">
       <header className="flex items-center gap-3 pt-2">
-        <Link href="/notes" aria-label={t("backToNotes")} className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
+        <button onClick={handleBack} aria-label={t("backToNotes")} className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />
-        </Link>
+        </button>
         <h1 className="text-2xl font-bold flex-1">{t("editTitle")}</h1>
         <button onClick={handleDelete} aria-label={t("deleteAria")}
           className="p-3 rounded-xl bg-destructive/15 text-destructive hover:bg-destructive/25 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">

@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { ArrowLeft, Save, ChevronDown, ChevronUp } from "lucide-react";
 import { db } from "@/lib/db";
 import { VoiceInput } from "@/components/accessibility/VoiceInput";
@@ -23,6 +22,20 @@ export default function NewNotePage() {
   const [title, setTitle] = useState("");
   const [blocks, setBlocks] = useState<Block[]>(INITIAL_BLOCKS);
   const [hintsOpen, setHintsOpen] = useState(false);
+
+  async function handleBack() {
+    const content = blocksToMarkdown(blocks).trim();
+    if (content || title.trim()) {
+      await db.notes.add({
+        title: title.trim() || t("untitled"),
+        content,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      toast.success(t("toastSaved"));
+    }
+    router.push("/notes");
+  }
 
   async function handleSave() {
     const content = blocksToMarkdown(blocks).trim();
@@ -96,9 +109,9 @@ export default function NewNotePage() {
   return (
     <div className="flex flex-col min-h-svh p-4 gap-4">
       <header className="flex items-center gap-3 pt-2">
-        <Link href="/notes" aria-label={t("backToNotes")} className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
+        <button onClick={handleBack} aria-label={t("backToNotes")} className="p-3 rounded-xl bg-secondary hover:bg-secondary/80 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />
-        </Link>
+        </button>
         <h1 className="text-2xl font-bold flex-1">{t("newTitle")}</h1>
         <button onClick={handleSave} aria-label={t("saveAria")}
           className="p-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-4 focus-visible:ring-ring min-h-[3rem] min-w-[3rem] flex items-center justify-center">
